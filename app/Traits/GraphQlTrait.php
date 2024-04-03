@@ -4,11 +4,11 @@ namespace App\Traits;
 
 use GuzzleHttp\Client;
 
-// use App\Traits\GraphQlTrait;
+use App\Traits\QuerysTrait;
 
 trait GraphQlTrait {
 
-    // use QuerysTrait;
+    use QuerysTrait;
 
     public function shopiGraph($query,$variables, $origen=true){
         
@@ -47,7 +47,22 @@ trait GraphQlTrait {
             return 'Error: ' . $e->getMessage();
         }
           
-    }    
+    }   
+
+    
+    public function buscarSKU($sku,$origen=true){
+        $querySKU=$this->queryFindVariantSKU();
+        // $skuVariables=[ "sku"=>$variante["node"]["sku"] ];
+        $skuVariables=[
+            'first' => 1,
+            'after' => null,
+            'before' => null,
+            'query'=>"sku:{$sku}"
+            // 'query' => "sku:{$variante["node"]["sku"]}",                        
+        ];
+        // dd( $skuVariables );
+        return $this->shopiGraph($querySKU, $skuVariables, $origen );
+    }
       
 
 

@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Traits\{ShopiApiTrait};
+
 class HomeController extends Controller
 {
+
+    use ShopiApiTrait;
+
     /**
      * Create a new controller instance.
      *
@@ -25,4 +30,19 @@ class HomeController extends Controller
     {
         return view('home');
     }
+
+    public function cuadro()
+    {
+        return view('cuadro');
+    }    
+
+    public function almacen(){
+        $apiVer=env("SHOPIFY_VER");
+        return $this->shopiRequest( [
+            "verbo"=>"GET",
+            "url"=> "/admin/api/{$apiVer}/locations.json",
+            "opciones"=>[],
+        ] );
+    }
+
 }

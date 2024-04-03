@@ -1,6 +1,8 @@
 <template>
-    <v-app-bar scroll-behavior="fade-image collapse"
-  image="https://c4.wallpaperflare.com/wallpaper/25/600/953/city-street-cars-trees-black-and-white-city-buildings-gray-scale-photo-wallpaper-preview.jpg">
+    <v-app-bar 
+      scroll-behavior="fade-image collapse"
+
+    >
       <v-app-bar-nav-icon @click="drawer = !drawer">
         <v-icon icon="mdi mdi-menu"></v-icon>
       </v-app-bar-nav-icon>

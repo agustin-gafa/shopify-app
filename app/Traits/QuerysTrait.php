@@ -59,95 +59,36 @@ trait QuerysTrait {
             }
         }
         GRAPHQL;
-    }    
-
-    public function queryCreateProduct(){
-        return  <<<GRAPHQL
-                    mutation createProductWithVariants(\$input: ProductInput!) {
-                        productCreate(input: \$input) {
-                            product {
-                                id
-                                title    
-                                descriptionHtml                            
-                                options{
-                                    name                                    
-                                }
-                                variants {
-                                    edges {
-                                        node {
-                                            id
-                                            title
-                                            price
-                                            sku    
-                                            selectedOptions{
-                                                name
-                                                value
-                                            }                                    
-                                        }
-                                    }
-                                }
-                            }
-                            userErrors {
-                                field
-                                message
-                            }
-                        }
-                    }
-                GRAPHQL;
-
     }
 
-    public function queryFindProductSKU(){
+    public function queryFindVariantSKU(){
         return  <<<GRAPHQL
-                query FindProductBySKU(\$sku: String!) {
-                        products(query: "sku:\$sku") {
-                        edges {
-                        node {
+            query(\$first: Int!, \$after: String, \$before: String, \$query: String!) {
+                productVariants(first: \$first, after: \$after, before: \$before, query: \$query) {
+                    pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                    }
+                    edges {
+                    node {
+                        id
+                        title
+                        price
+                        sku
+                        inventoryQuantity
+                        inventoryItem {
+                            id
+                        }
+                        product {
                             id
                             title
-                            descriptionHtml
-                            tags
-                            totalVariants
-                            totalInventory
-                            status
-                            createdAt
-                            updatedAt
-                            publishedAt
-                            onlineStoreUrl
-                            images(first: 10) {
-                            edges {
-                                node {
-                                id
-                                src
-                                }
-                            }
-                            }
-                            metafields(first: 10) {
-                            edges {
-                                node {
-                                id
-                                namespace
-                                key
-                                value
-                                }
-                            }
-                            }
-                            variants(first: 250) {
-                            edges {
-                                node {
-                                id
-                                title
-                                price
-                                sku
-                                inventoryQuantity
-                                }
-                            }
-                            }
-                        }
                         }
                     }
+                    }
                 }
-
+            }
         GRAPHQL;
     }
 
