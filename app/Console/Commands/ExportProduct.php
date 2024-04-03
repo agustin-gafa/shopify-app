@@ -38,7 +38,7 @@ class ExportProduct extends Command
         $agCount=0;
 
         $variables = [
-            'first' => 3,
+            'first' => 10,
             'after' => null,
             'before' => null,
             'query' => '',

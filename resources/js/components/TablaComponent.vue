@@ -99,7 +99,7 @@
 
         try {
           this.loading=true;
-          let response = await axios.get('http://rkn-laravel-vuetify.test/productos',{
+          let response = await axios.get('http://shopify-app.test/productos',{
             params: {
               cursor: this.cursor,
               prevNext: prevNext

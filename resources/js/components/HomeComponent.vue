@@ -6,13 +6,13 @@
     </menu-component>
 
     <v-main class="">
+     <slot name="jorge"></slot>
       <v-container>
         <v-row>
             <!--  -->
 
-
            <slot name="contenido"></slot>           
-
+                     
 
 
         </v-row>
