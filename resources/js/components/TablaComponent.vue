@@ -26,13 +26,9 @@
       </v-card>
     </template>
 
-    <template v-slot:item.node.tags="{value}">
+    <template v-slot:item.node.images.edges[0].node.src="{value}">
       
-      <template v-for="(tag, index) in value">
-        <v-chip class="ma-1" size="small">
-          {{tag}}
-        </v-chip>
-      </template>
+      <img class="pt-2" width="50px" :src="value" alt="">
 
     </template>
 
@@ -62,6 +58,7 @@
 
         expanded: [],
         productHeaders: [
+          { title: 'IMG', key: 'node.images.edges[0].node.src' },
           {
             title: 'Producto',
             align: 'start',
@@ -69,7 +66,6 @@
             key: 'node.title',
           },
           { title: 'STATUS', key: 'node.status' },
-          { title: 'TAGS', key: 'node.tags' },
           { title: 'TOTAL INVENTARIO', key: 'node.totalInventory' },
           { title: '# Variantes', key: 'node.totalVariants' },                  
           { title: '', key: 'data-table-expand' },
@@ -99,7 +95,7 @@
 
         try {
           this.loading=true;
-          let response = await axios.get('http://rkn-laravel-vuetify.test/productos',{
+          let response = await axios.get('/productos',{
             params: {
               cursor: this.cursor,
               prevNext: prevNext
@@ -111,7 +107,7 @@
           // this.paginacion=response.data.data.products.pageInfo;
           this.loading=false;
 
-          // console.log( response.data.data.products.pageInfo )
+          console.log( this.productos )
           
 
         } catch (error) {

@@ -33,7 +33,7 @@ class ExportProduct extends Command
         $this->line("<fg=black;bg=blue>:::::::::::::::::::: INICIA PROCESO | ".date('Y-m-d H:i:s')." ::::::::::::::::::::</>");
 
         $first=( $this->argument('producto')!="-"?1:$this->argument('first') );
-        $filter=( $this->argument('producto')!="-"?"title:{$this->argument('producto')}":'' );        
+        $filter=( $this->argument('producto')!="-"?"title:'{$this->argument('producto')}'":'' );        
 
         $query = $this->queryGetProducts();
 
@@ -41,7 +41,7 @@ class ExportProduct extends Command
         $agCount=0;
 
         $variables = [
-            'first' => $first,
+            'first' => (int)$first,
             'after' => null,
             'before' => null,
             'query' => $filter,
@@ -55,7 +55,7 @@ class ExportProduct extends Command
 
             $response = $this->shopiGraph($query, $variables);
 
-            
+            // dd( $response );            
 
             foreach ($response['data']['products']['edges'] as $clave => $producto) {     
                 

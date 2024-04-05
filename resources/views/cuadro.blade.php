@@ -8,6 +8,7 @@
 
         <template v-slot:contenido>
             <producto token="{{ csrf_token() }}"></producto>
+            <stock></stock>
         </template>
 
     </<cuadro-component>

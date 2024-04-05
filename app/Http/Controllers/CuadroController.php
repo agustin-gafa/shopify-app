@@ -15,7 +15,7 @@ class CuadroController extends Controller
 
         $form=request()->all();
 
-        $filter="title:{$form['producto']}";     
+        $filter="title:'{$form['producto']}'";     
 
         $query = $this->queryGetProducts();
 
@@ -55,6 +55,40 @@ class CuadroController extends Controller
         
 
     }    
+
+    public function stockFront(Request $request){
+
+        $form=request()->all();
+
+        $sku=$form['sku'];
+        
+        $origen=$this->buscarSKU( $sku );        
+        if(!$origen["data"]["productVariants"]["pageInfo"]["startCursor"] ){            
+            return response()->json(['msj' => "NO SE ENCONTRO EN ORIGEN {$sku}"], 401);            
+        }
+        $getID=explode("/",$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
+
+        
+        $b2b=$this->buscarSKU( $sku,false );      
+        if(!$b2b["data"]["productVariants"]["pageInfo"]["startCursor"] ){            
+            return response()->json(['msj' => "NO SE ENCONTRO EN B2B {$sku}"], 401);             
+        }          
+        $getIDb2b=explode("/",$b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
+
+        if( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
+
+            $response=$this->ajustarStock([
+                "inventory_item_id"=> array_pop($getIDb2b),
+                "available"=>$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"]
+            ]);
+
+            return response()->json(['msj'=>"Se establecio el STOCK en: {$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"]}"], 200);
+
+        }else{            
+            return response()->json(['msj'=>"No hay cambios para el producto"], 200);
+        }        
+
+    }
 
 
 }

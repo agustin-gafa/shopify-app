@@ -20,3 +20,4 @@ Route::get('/almacen', [App\Http\Controllers\HomeController::class, 'almacen']);
 
 
 Route::post('/crear-producto', [App\Http\Controllers\CuadroController::class, 'crearProductoFront']);
+Route::post('/stock', [App\Http\Controllers\CuadroController::class, 'stockFront']);
