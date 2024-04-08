@@ -22,14 +22,7 @@ trait QuerysTrait {
                         descriptionHtml
                         tags
                         totalVariants
-                        totalInventory
-                        inventoryItem{
-                            edges {
-                                node {
-                                    id                                    
-                                }
-                            }
-                        }                      
+                        totalInventory                    
                         vendor
                         status
                         images(first: 250) { # Obtener las primeras 5 imágenes del producto
