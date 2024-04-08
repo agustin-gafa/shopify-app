@@ -23,6 +23,13 @@ trait QuerysTrait {
                         tags
                         totalVariants
                         totalInventory
+                        inventoryItem{
+                            edges {
+                                node {
+                                    id                                    
+                                }
+                            }
+                        }                      
                         vendor
                         status
                         images(first: 250) { # Obtener las primeras 5 imágenes del producto
@@ -61,9 +68,68 @@ trait QuerysTrait {
         GRAPHQL;
     }
 
+
+    public function queryGetProductsPrev()
+    {
+        return <<<GRAPHQL
+        query(\$first: Int!, \$after: String, \$query: String!) {
+            products(first: \$first, after: \$after, query: \$query) {
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+                edges {
+                    node {
+                        id
+                        title
+                        descriptionHtml
+                        tags
+                        totalVariants
+                        totalInventory
+                        vendor
+                        status
+                        images(first: 250) { # Obtener las primeras 5 imágenes del producto
+                            edges {
+                                node {
+                                    id
+                                    src
+                                }
+                            }
+                        }                        
+                        metafields(first: 250) { # Obtener los primeros 5 metafields del producto
+                            edges {
+                                node {
+                                    id
+                                    namespace
+                                    key
+                                    value
+                                }
+                            }
+                        }
+                        variants(first: 250) {
+                            edges {
+                                node {
+                                    id
+                                    title
+                                    price
+                                    sku
+                                    inventoryQuantity
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        GRAPHQL;
+    }    
+
+
     public function queryFindVariantSKU(){
         return  <<<GRAPHQL
-            query(\$first: Int!, \$after: String, \$before: String, \$query: String!) {
+            query(\$first: Int!, \$after: String, \$before: String, \$query: String!,\$locationId: ID!) {
                 productVariants(first: \$first, after: \$after, before: \$before, query: \$query) {
                     pageInfo {
                     hasNextPage
@@ -72,20 +138,28 @@ trait QuerysTrait {
                     endCursor
                     }
                     edges {
-                    node {
-                        id
-                        title
-                        price
-                        sku
-                        inventoryQuantity
-                        inventoryItem {
-                            id
-                        }
-                        product {
+                        node {
                             id
                             title
+                            price
+                            sku
+                            inventoryQuantity                            
+                            inventoryItem{
+                                id                              
+                                inventoryLevel(locationId: \$locationId) {
+                                    id                                    
+                                    quantities(names:"available"){
+                                        quantity
+                                    }
+                                }
+
+                            }
+                            product {
+                                id
+                                title
+                                totalInventory
+                            }
                         }
-                    }
                     }
                 }
             }

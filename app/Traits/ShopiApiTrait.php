@@ -13,6 +13,8 @@ trait ShopiApiTrait {
         // $token=env('B2B_TOKEN');
 
         return "https://".env('B2B_CLAVE_API').":".env('B2B_TOKEN')."@".env('B2B_URL');
+
+        // return "https://".env('SHOPIFY_CLAVE_API').":".env('SHOPIFY_TOKEN')."@".env('SHOPIFY_URL');
     }
 
     public function shopiRequest($datos){ //Set the status as active, draft, or archived

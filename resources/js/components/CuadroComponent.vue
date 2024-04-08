@@ -5,9 +5,9 @@
       <slot name="token"></slot>
     </menu-component>
 
-    <v-main class="bg-rkn">
-      <v-container>
-        <v-row>
+    <v-main>
+      <v-container class="fill-height" fluid>
+        <v-row lign="center" justify="center">
             <!--  -->
 
 
@@ -29,7 +29,3 @@
     }
   }
 </script>
-
-<style scoped>
-  .bg-rkn{background:#f1f1f1;}
-</style>

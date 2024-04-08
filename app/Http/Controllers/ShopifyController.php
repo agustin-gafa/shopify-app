@@ -23,6 +23,7 @@ class ShopifyController extends Controller
         $prevNext = $request->input('prevNext');
         $cursor = $request->input('cursor');
 
+        $first=10;
         $after = $before = null;
 
         // Solo configuramos los cursores si prevNext está presente
@@ -31,11 +32,12 @@ class ShopifyController extends Controller
                 $after = $cursor;
             } elseif ($prevNext == 'before') {
                 $before = $cursor;
+                $query=$this->queryGetProductsPrev();
             }
         }
 
         $variables = [
-            'first' => 10, // Obtener los primeros 10 productos
+            'first' => $first, // Obtener los primeros 10 productos
             'after' => $after,
             'before' => $before,
             'query' => '', // Término de búsqueda (nombre del producto o SKU)

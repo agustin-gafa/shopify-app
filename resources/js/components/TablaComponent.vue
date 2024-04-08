@@ -8,6 +8,7 @@
     show-expand
     @update:options="getProducts"
     :loading="loading"
+    show-select
   >
     <template v-slot:top>
       <v-card
@@ -39,6 +40,7 @@
         </td>
       </tr>
     </template>
+
   </v-data-table-server>
 </template>
 
@@ -56,6 +58,7 @@
         currentPage:1,
         
 
+        page: 1,
         expanded: [],
         productHeaders: [
           { title: 'IMG', key: 'node.images.edges[0].node.src' },
@@ -83,6 +86,15 @@
         ],
       }
     },
+
+
+
+    computed: {
+      pageCount () {
+        return Math.ceil(this.productos.length / 2000)
+      },
+    },    
+
 
     methods: {
       async getProducts( { page, itemsPerPage, sortBy } ){

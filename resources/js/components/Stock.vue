@@ -1,30 +1,27 @@
 <template>
-  <v-col cols="8" class="mx-auto">
-    <v-card class="rounded-xl" color="white">
+  <v-col cols="12" md="7" class="mx-auto mt-2">
+    <v-card class="rounded elevation-5">
     <v-form fast-fail @submit.prevent="productoB2B" ref="formStock">          
 
-      <template v-if="alerta.active">
-        
-        <v-alert          
-          density="compact"                    
-          :type="alerta.tipo"
-          class="text-center"
-        >
-        <div class="text-h6 mb-1"> {{ msj }} </div>
-        </v-alert>
-      
-      </template>
+      <v-card-title class="text-center">
+        <v-icon icon="mdi mdi-calculator-variant" :color="alerta.tipo"></v-icon>
+        <v-chip variant="text" size="x-large" :color="alerta.tipo">
+          {{ msj }}      
+        </v-chip>
+
+      </v-card-title>
 
       <v-text-field
         variant="outlined"
-        class="pa-3 mt-3"
+        class="px-3 pb-2"
         v-model="sku"
         :rules="skuRules"
         label="SKU variante"
+        :color="alerta.tipo"
       ></v-text-field>
 
       
-      <v-btn variant="tonal" class="mx-auto" color="info" type="submit" block >SYNC STOCK</v-btn>    
+      <v-btn variant="tonal" class="mx-auto" color="success" type="submit" block >SYNC STOCK</v-btn>    
 
 
     </v-form>
@@ -53,7 +50,7 @@
       msj:'Verificar Stock',
       alerta: {
         active:true,
-        tipo: "info",
+        tipo: "grey",
         overlay: false
       },
       sku: '',
@@ -85,13 +82,13 @@
               // console.log( response );
 
               this.msj=response.data.msj;          
-              this.alerta.tipo="success";
+              this.alerta.tipo=response.data.tipo;
 
 
             } catch (error) {
               // console.log( error.response )
               this.msj=error.response.data.msj;
-              this.alerta.tipo="warning";
+              this.alerta.tipo=error.response.data.tipo;
             }
             
             this.alerta.active=true;

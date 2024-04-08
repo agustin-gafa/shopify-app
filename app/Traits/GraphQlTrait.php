@@ -52,12 +52,14 @@ trait GraphQlTrait {
     
     public function buscarSKU($sku,$origen=true){
         $querySKU=$this->queryFindVariantSKU();
+        $location=($origen?env("SHOPIFY_LOCATION_ID"):env("B2B_LOCATION_ID") );
         // $skuVariables=[ "sku"=>$variante["node"]["sku"] ];
         $skuVariables=[
             'first' => 1,
             'after' => null,
             'before' => null,
-            'query'=>"sku:{$sku}"
+            'query'=>"sku:{$sku}",
+            'locationId'=>"gid://shopify/Location/{$location}"
             // 'query' => "sku:{$variante["node"]["sku"]}",                        
         ];
         // dd( $skuVariables );
