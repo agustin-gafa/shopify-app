@@ -8,6 +8,7 @@
     show-expand
     @update:options="getProducts"
     :loading="loading"
+    show-select
   >
     <template v-slot:top>
       <v-card
@@ -26,13 +27,9 @@
       </v-card>
     </template>
 
-    <template v-slot:item.node.tags="{value}">
+    <template v-slot:item.node.images.edges[0].node.src="{value}">
       
-      <template v-for="(tag, index) in value">
-        <v-chip class="ma-1" size="small">
-          {{tag}}
-        </v-chip>
-      </template>
+      <img class="pt-2" width="50px" :src="value" alt="">
 
     </template>
 
@@ -43,6 +40,7 @@
         </td>
       </tr>
     </template>
+
   </v-data-table-server>
 </template>
 
@@ -60,8 +58,10 @@
         currentPage:1,
         
 
+        page: 1,
         expanded: [],
         productHeaders: [
+          { title: 'IMG', key: 'node.images.edges[0].node.src' },
           {
             title: 'Producto',
             align: 'start',
@@ -69,7 +69,6 @@
             key: 'node.title',
           },
           { title: 'STATUS', key: 'node.status' },
-          { title: 'TAGS', key: 'node.tags' },
           { title: 'TOTAL INVENTARIO', key: 'node.totalInventory' },
           { title: '# Variantes', key: 'node.totalVariants' },                  
           { title: '', key: 'data-table-expand' },
@@ -88,6 +87,15 @@
       }
     },
 
+
+
+    computed: {
+      pageCount () {
+        return Math.ceil(this.productos.length / 2000)
+      },
+    },    
+
+
     methods: {
       async getProducts( { page, itemsPerPage, sortBy } ){
 
@@ -99,7 +107,7 @@
 
         try {
           this.loading=true;
-          let response = await axios.get('http://shopify-app.test/productos',{
+          let response = await axios.get('/productos',{
             params: {
               cursor: this.cursor,
               prevNext: prevNext
@@ -111,7 +119,7 @@
           // this.paginacion=response.data.data.products.pageInfo;
           this.loading=false;
 
-          // console.log( response.data.data.products.pageInfo )
+          console.log( this.productos )
           
 
         } catch (error) {

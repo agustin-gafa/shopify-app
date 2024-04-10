@@ -13,6 +13,8 @@ trait ShopiApiTrait {
         // $token=env('B2B_TOKEN');
 
         return "https://".env('B2B_CLAVE_API').":".env('B2B_TOKEN')."@".env('B2B_URL');
+
+        // return "https://".env('SHOPIFY_CLAVE_API').":".env('SHOPIFY_TOKEN')."@".env('SHOPIFY_URL');
     }
 
     public function shopiRequest($datos){ //Set the status as active, draft, or archived
@@ -20,6 +22,24 @@ trait ShopiApiTrait {
         $response = $client->request($datos['verbo'], $this->setBaseUrl().$datos["url"], $datos['opciones'] );                
         return json_decode($response->getBody()->getContents(), JSON_OBJECT_AS_ARRAY);        
     }
+
+    function ajustarStock($data){
+        $apiVer=env("SHOPIFY_VER");
+        $orden=$this->shopiRequest( [
+            "verbo"=>"POST",
+            // "url"=> "/admin/api/2022-10/inventory_levels/adjust.json",
+            "url"=>"/admin/api/{$apiVer}/inventory_levels/set.json",
+            "opciones"=>[
+                'json'=>[
+                    'location_id'           => env('B2B_LOCATION_ID'),
+                    'inventory_item_id'     => $data['inventory_item_id'],
+                    'available'  => $data['available'],                
+                ]
+            ],
+        ] );
+
+        return $orden;
+    }      
 
     public function crearProductoShopify($producto){
 

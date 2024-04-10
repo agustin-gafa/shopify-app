@@ -1,6 +1,8 @@
 <template>
-    <v-app-bar scroll-behavior="fade-image collapse"
-  image="https://c4.wallpaperflare.com/wallpaper/25/600/953/city-street-cars-trees-black-and-white-city-buildings-gray-scale-photo-wallpaper-preview.jpg">
+    <v-app-bar 
+      scroll-behavior="fade-image collapse"
+
+    >
       <v-app-bar-nav-icon @click="drawer = !drawer">
         <v-icon icon="mdi mdi-menu"></v-icon>
       </v-app-bar-nav-icon>
@@ -99,8 +101,8 @@
     >
     
     <v-list density="compact" nav>
-          <v-list-item prepend-icon="mdi-folder" title="My Files" value="myfiles"></v-list-item>
-          <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item>
+          <a href="/"><v-list-item prepend-icon="mdi-folder" title="My Files" value="myfiles"></v-list-item></a>
+          <a href="/rkn"><v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item></a>
           <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
     </v-list> 
 

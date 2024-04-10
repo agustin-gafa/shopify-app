@@ -15,7 +15,7 @@ class ExportProduct extends Command
      *
      * @var string
      */
-    protected $signature = 'app:export-product';
+    protected $signature = 'app:export-product {producto=-} {first=1} {limit=1}';
 
     /**
      * The console command description.
@@ -32,49 +32,33 @@ class ExportProduct extends Command
 
         $this->line("<fg=black;bg=blue>:::::::::::::::::::: INICIA PROCESO | ".date('Y-m-d H:i:s')." ::::::::::::::::::::</>");
 
+        $first=( $this->argument('producto')!="-"?1:$this->argument('first') );
+        $filter=( $this->argument('producto')!="-"?"title:'{$this->argument('producto')}'":'' );        
+
         $query = $this->queryGetProducts();
 
-        $agTEST=1;
+        $agTEST=$this->argument('limit');
         $agCount=0;
 
         $variables = [
-            'first' => 10,
+            'first' => (int)$first,
             'after' => null,
             'before' => null,
-            'query' => '',
+            'query' => $filter,
         ];        
         
-        $hasNextPage = true;
+        // dd( $variables );
 
+        $hasNextPage = true;
         
         while ($hasNextPage) {
 
             $response = $this->shopiGraph($query, $variables);
 
-            // dd( $response );
-
+            // dd( $response );            
 
             foreach ($response['data']['products']['edges'] as $clave => $producto) {     
-
-                // dd($producto);
-
                 
-                
-                // $querySKU=$this->queryGetProducts();
-                // // $skuVariables=[ "sku"=>$variante["node"]["sku"] ];
-                // $skuVariables=[
-                //     'first' => 1,
-                //     'after' => null,
-                //     'before' => null,
-                //     'query'=>"title:{$producto["node"]["title"]}"
-                //     // 'query' => "sku:{$variante["node"]["sku"]}",                        
-                // ];
-                // // dd( $skuVariables );
-                // $busqueda=$this->shopiGraph($querySKU, $skuVariables,false );
-                // dd( $busqueda );
-                
-
-
                 $input=$this->mapProductApi( $producto );    
                 
                 // dd( $input );
