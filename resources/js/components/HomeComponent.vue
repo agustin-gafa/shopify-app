@@ -5,8 +5,7 @@
       <slot name="token"></slot>
     </menu-component>
 
-    <v-main class="">
-     <slot name="jorge"></slot>
+    <v-main class="">     
       <v-container>
         <v-row>
             <!--  -->

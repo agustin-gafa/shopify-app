@@ -10,9 +10,6 @@
         <template v-slot:contenido>
             <tabla-component></tabla-component>
         </template>
-        <template v-slot:jorge>
-            <jorge-component></jorge-component>
-        </template>
     </home-component>
         
 @endsection
