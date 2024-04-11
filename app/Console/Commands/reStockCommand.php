@@ -35,7 +35,7 @@ class reStockCommand extends Command
 
         $this->line("BUSCANDO EN ORIGEN: {$sku}");
         $origen=$this->buscarSKU( $sku );    
-        
+
         // dd( $origen );
 
         // dd( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] );
@@ -55,14 +55,19 @@ class reStockCommand extends Command
         }          
         $getIDb2b=explode("/",$b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
 
-        if( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
+
+        
+        $stockOrigen=$this->evaluarStock( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"] );
+
+
+        if( $stockOrigen != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
 
             $response=$this->ajustarStock([
                 "inventory_item_id"=> array_pop($getIDb2b),
-                "available"=>$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] 
+                "available"=>$stockOrigen 
             ]);
 
-            $this->line("<fg=black;bg=green> Se establecio el STOCK en: {$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] }</>");
+            $this->line("<fg=black;bg=green> Se establecio el STOCK en: {$stockOrigen }</>");
 
         }else{
             $this->line("<fg=black;bg=blue>No hay cambios para el producto</>");

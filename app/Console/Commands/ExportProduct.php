@@ -49,6 +49,13 @@ class ExportProduct extends Command
         
         // dd( $variables );
 
+        // $exiteB2B=$response = $this->shopiGraph($query, $variables,false);
+        // if( !$exiteB2B["data"]["products"]["pageInfo"]["startCursor"] == null ){
+        //     $this->line("El producto ya existe en B2B");    
+        //     exit();            
+        // }
+
+
         $hasNextPage = true;
         
         while ($hasNextPage) {
@@ -61,7 +68,7 @@ class ExportProduct extends Command
                 
                 $input=$this->mapProductApi( $producto );    
                 
-                // dd( $input );
+                dd( $input );
                 
                 $this->line("Creando {$input['title']}");            
                 try {

@@ -45,4 +45,8 @@ class HomeController extends Controller
         ] );
     }
 
+    public function configStore(){
+        return view('config');
+    }
+
 }

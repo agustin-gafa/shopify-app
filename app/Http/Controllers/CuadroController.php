@@ -81,14 +81,16 @@ class CuadroController extends Controller
         }          
         $getIDb2b=explode("/",$b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
 
-        if( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
+        $stockOrigen=$this->evaluarStock( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"] );
+
+        if( $stockOrigen != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
 
             $response=$this->ajustarStock([
                 "inventory_item_id"=> array_pop($getIDb2b),
-                "available"=>$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] 
+                "available"=>$stockOrigen 
             ]);
 
-            return response()->json(['msj'=>"Se establecio el STOCK en: {$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"]}","tipo"=>"success"], 200);
+            return response()->json(['msj'=>"Se establecio el STOCK en: {$stockOrigen}","tipo"=>"success"], 200);
 
         }else{            
             return response()->json(['msj'=>"No hay cambios para el producto","tipo"=>"info"], 200);

@@ -113,6 +113,8 @@ trait ShopiApiTrait {
 
         $split=explode(" / ", $variante["title"] );
 
+        $stock=$this->evaluarStock($variante["inventoryItem"]["inventoryLevels"]["edges"] );
+
         return [
              'title'                => $variante["title"],
              'status'               => 'draft',
@@ -123,7 +125,7 @@ trait ShopiApiTrait {
              "option1"              => $split[0],
             //  "option2"              => $split[1],
             //  "option3"              => $variante['Descripcion_Marca'],
-             "inventory_quantity"   => (int)$variante['inventoryQuantity'],
+             "inventory_quantity"   => $stock, #(int)$variante['inventoryQuantity'],
              "fulfillment_service"  => "manual",
              "inventory_management" => "shopify",
             //  "weight"               => "1.5",                     
@@ -138,5 +140,20 @@ trait ShopiApiTrait {
          ];
     }
 
+
+    public function evaluarStock($arrayAlmacen){
+        $almacenesOrigen=$arrayAlmacen; #$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"];
+        $selectAlmacen=explode(",",env("SHOPIFY_LOCATION_ID"));
+        $stockSum=0;
+        foreach ($almacenesOrigen as $indexAl => $almacen) {
+            $buscarAlmacen=explode("/",$almacen["node"]["location"]["id"]);
+            if( in_array( array_pop($buscarAlmacen), $selectAlmacen ) ){
+                $stockSum+=$almacen["node"]["quantities"][0]["quantity"];
+            }
+            
+        }
+
+        return $stockSum;
+    }
     
 }

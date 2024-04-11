@@ -51,6 +51,24 @@ trait QuerysTrait {
                                     price
                                     sku
                                     inventoryQuantity
+                                    inventoryItem{
+                                        id                              
+                                        inventoryLevels(first: 200) {                             
+                                            edges {
+                                                node {
+                                                    id                                    
+                                                    location {
+                                                        id
+                                                        name
+                                                    }                                              
+                                                    quantities(names: "available") {
+                                                        quantity
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                    }                                    
                                 }
                             }
                         }
@@ -109,6 +127,24 @@ trait QuerysTrait {
                                     price
                                     sku
                                     inventoryQuantity
+                                    inventoryItem{
+                                        id                              
+                                        inventoryLevels(first: 200) {                             
+                                            edges {
+                                                node {
+                                                    id                                    
+                                                    location {
+                                                        id
+                                                        name
+                                                    }                                              
+                                                    quantities(names: "available") {
+                                                        quantity
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                    }
                                 }
                             }
                         }
@@ -122,7 +158,7 @@ trait QuerysTrait {
 
     public function queryFindVariantSKU(){
         return  <<<GRAPHQL
-            query(\$first: Int!, \$after: String, \$before: String, \$query: String!,\$locationId: ID!) {
+            query(\$first: Int!, \$after: String, \$before: String, \$query: String!) {
                 productVariants(first: \$first, after: \$after, before: \$before, query: \$query) {
                     pageInfo {
                     hasNextPage
@@ -139,10 +175,18 @@ trait QuerysTrait {
                             inventoryQuantity                            
                             inventoryItem{
                                 id                              
-                                inventoryLevel(locationId: \$locationId) {
-                                    id                                    
-                                    quantities(names:"available"){
-                                        quantity
+                                inventoryLevels(first: 200) {                             
+                                    edges {
+                                        node {
+                                            id                                    
+                                            location {
+                                                id
+                                                name
+                                            }                                              
+                                            quantities(names: "available") {
+                                                quantity
+                                            }
+                                        }
                                     }
                                 }
 
