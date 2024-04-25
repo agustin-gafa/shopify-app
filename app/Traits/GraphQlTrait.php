@@ -66,6 +66,24 @@ trait GraphQlTrait {
         // dd( $skuVariables );
         return $this->shopiGraph($querySKU, $skuVariables, $origen );
     }
+
+    public function buscarProducto($productName){
+        $filter="title:'{$productName}'";     
+
+        $query = $this->queryGetProducts();
+
+        $variables = [
+            'first' => 1,
+            'after' => null,
+            'before' => null,
+            'query' => $filter,
+        ];        
+
+        $exiteB2B=$this->shopiGraph($query, $variables,false);
+
+        $validacion=( !$exiteB2B["data"]["products"]["pageInfo"]["startCursor"]== null?true:false );           
+        return [ "validacion"=>$validacion,"producto"=>$exiteB2B ];
+    }
       
 
 

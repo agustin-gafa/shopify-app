@@ -8,7 +8,7 @@ trait QuerysTrait {
     {
         return <<<GRAPHQL
         query(\$first: Int!, \$after: String, \$before: String, \$query: String!) {
-            products(first: \$first, after: \$after, before: \$before, query: \$query) {
+            products(first: \$first, after: \$after, before: \$before, query: \$query, sortKey: UPDATED_AT, reverse: true) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -24,26 +24,27 @@ trait QuerysTrait {
                         totalVariants
                         totalInventory                    
                         vendor
-                        status
-                        images(first: 250) { # Obtener las primeras 5 imágenes del producto
+                        status                        
+                        images(first: 10) {
                             edges {
                                 node {
-                                    id
+                                    # id
                                     src
                                 }
                             }
                         }                        
-                        metafields(first: 250) { # Obtener los primeros 5 metafields del producto
-                            edges {
-                                node {
-                                    id
-                                    namespace
-                                    key
-                                    value
-                                }
-                            }
-                        }
-                        variants(first: 250) {
+                        # metafields(first: 5) {
+                        #     edges {
+                        #         node {
+                        #             id
+                        #             namespace
+                        #             key
+                        #             value
+                        #         }
+                        #     }
+                        # }      
+                        updatedAt                  
+                        variants(first: 20) {
                             edges {
                                 node {
                                     id
@@ -52,11 +53,11 @@ trait QuerysTrait {
                                     sku
                                     inventoryQuantity
                                     inventoryItem{
-                                        id                              
-                                        inventoryLevels(first: 200) {                             
+                                        # id                              
+                                        inventoryLevels(first: 10) {                             
                                             edges {
                                                 node {
-                                                    id                                    
+                                                    # id                                    
                                                     location {
                                                         id
                                                         name
@@ -84,7 +85,7 @@ trait QuerysTrait {
     {
         return <<<GRAPHQL
         query(\$first: Int!, \$after: String, \$query: String!) {
-            products(first: \$first, after: \$after, query: \$query) {
+            products(first: \$first, after: \$after, query: \$query, sortKey: UPDATED_AT,reverse: true ) {
                 pageInfo {
                     hasNextPage
                     hasPreviousPage
@@ -101,7 +102,7 @@ trait QuerysTrait {
                         totalInventory
                         vendor
                         status
-                        images(first: 250) { # Obtener las primeras 5 imágenes del producto
+                        images(first: 10) {
                             edges {
                                 node {
                                     id
@@ -109,17 +110,18 @@ trait QuerysTrait {
                                 }
                             }
                         }                        
-                        metafields(first: 250) { # Obtener los primeros 5 metafields del producto
-                            edges {
-                                node {
-                                    id
-                                    namespace
-                                    key
-                                    value
-                                }
-                            }
-                        }
-                        variants(first: 250) {
+                        # metafields(first: 10) {
+                        #     edges {
+                        #         node {
+                        #             id
+                        #             namespace
+                        #             key
+                        #             value
+                        #         }
+                        #     }
+                        # }
+                        updatedAt
+                        variants(first: 20) {
                             edges {
                                 node {
                                     id
@@ -129,7 +131,7 @@ trait QuerysTrait {
                                     inventoryQuantity
                                     inventoryItem{
                                         id                              
-                                        inventoryLevels(first: 200) {                             
+                                        inventoryLevels(first: 10) {                             
                                             edges {
                                                 node {
                                                     id                                    

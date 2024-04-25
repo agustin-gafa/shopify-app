@@ -23,6 +23,9 @@ Route::get('/almacen', [App\Http\Controllers\HomeController::class, 'almacen']);
 Route::get('/rkn-config', [App\Http\Controllers\HomeController::class, 'configStore']);
 
 
-
 Route::post('/crear-producto', [App\Http\Controllers\CuadroController::class, 'crearProductoFront']);
 Route::post('/stock', [App\Http\Controllers\CuadroController::class, 'stockFront']);
+
+
+// WEBHOOKS
+Route::post('/shopify/webhook', [App\Http\Controllers\WebHooksController::class, 'orders']);

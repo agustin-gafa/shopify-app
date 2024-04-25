@@ -29,7 +29,7 @@ class CuadroController extends Controller
             'query' => $filter,
         ];        
 
-        $exiteB2B=$response = $this->shopiGraph($query, $variables,false);
+        $exiteB2B=$this->shopiGraph($query, $variables,false);
         if( !$exiteB2B["data"]["products"]["pageInfo"]["startCursor"] == null ){
             return response()->json(['msj' => "El producto ya existe en B2B","tipo"=>"warning"], 401);
         }
@@ -50,8 +50,12 @@ class CuadroController extends Controller
                 $input=$this->mapProductApi( $producto );    
                           
                 try {
-                    $crearProducto=$this->crearProductoShopify( $input );                    
-                    return response()->json(['msj'=>"Se creo el producto B2B","tipo"=>"success",'response' => $crearProducto], 200);
+                    if( count($input["variants"])>0 ){
+                        $crearProducto=$this->crearProductoShopify( $input );                    
+                        return response()->json(['msj'=>"Se creo el producto B2B","tipo"=>"success",'response' => $crearProducto], 200);
+                    }else{
+                        return response()->json(['msj' => "PRODUCTO SIN SKU","tipo"=>"warning"], 401);
+                    }
                 } catch (\Exception $e) {
                     return response()->json(['msj' => $e,"tipo"=>"error"], 401);                    
                 }
@@ -67,6 +71,9 @@ class CuadroController extends Controller
         $form=request()->all();
 
         $sku=$form['sku'];
+        $alm1st=0;
+        $primerAlmacen=0;
+        $getAlmacenB2B=env("B2B_LOCATION_ID");
         
         $origen=$this->buscarSKU( $sku );        
         if(!$origen["data"]["productVariants"]["pageInfo"]["startCursor"] ){            
@@ -78,23 +85,40 @@ class CuadroController extends Controller
         $b2b=$this->buscarSKU( $sku,false );      
         if(!$b2b["data"]["productVariants"]["pageInfo"]["startCursor"] ){            
             return response()->json(['msj' => "No se encontro en B2B {$sku}","tipo"=>"error"], 401);             
-        }          
-        $getIDb2b=explode("/",$b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
+        }       
+        
+        // buscar ALMACEN
+        foreach ( $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"] as $indexAlm => $almacenAg) {
+            $almacenBusqueda=explode("/",$almacenAg["node"]["location"]["id"]);
+            $ultimo=array_pop($almacenBusqueda);
+            if( $ultimo== $getAlmacenB2B ){
+                $alm1st=1;
+                $primerAlmacen=$almacenAg["node"]["quantities"][0]["quantity"];                
+            }
+        }
+
 
         $stockOrigen=$this->evaluarStock( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"] );
 
-        if( $stockOrigen != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
+        $getIDb2b=explode("/", $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
 
-            $response=$this->ajustarStock([
-                "inventory_item_id"=> array_pop($getIDb2b),
-                "available"=>$stockOrigen 
-            ]);
+        if($alm1st==1){
+            if( $stockOrigen != $primerAlmacen ){
 
-            return response()->json(['msj'=>"Se establecio el STOCK en: {$stockOrigen}","tipo"=>"success"], 200);
+                $response=$this->ajustarStock([
+                    "inventory_item_id"=> array_pop($getIDb2b),
+                    "available"=>$stockOrigen,
+                    "tipo"=>false
+                ]);
 
-        }else{            
-            return response()->json(['msj'=>"No hay cambios para el producto","tipo"=>"info"], 200);
-        }        
+                return response()->json(['msj'=>"Se establecio el STOCK en: {$stockOrigen}","tipo"=>"success"], 200);
+
+            }else{            
+                return response()->json(['msj'=>"No hay cambios para el producto","tipo"=>"info"], 200);
+            }  
+        }else{
+            return response()->json(['msj'=>"El almacen no coinciden en B2B","tipo"=>"warning"], 200);
+        }  
 
     }
 

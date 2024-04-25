@@ -5,18 +5,22 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 
 use App\Traits\{ShopiApiTrait,GraphQlTrait};
+use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use App\Jobs\{StockCommandJob};
+use Carbon\Carbon;
 
 class reStockCommand extends Command
 {
 
-    use ShopiApiTrait,GraphQlTrait;
+    use DispatchesJobs,ShopiApiTrait,GraphQlTrait;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:re-stock {sku}';
+    protected $signature = 'app:re-stock {inicio=HOY} {producto=-}';
 
     /**
      * The console command description.
@@ -30,47 +34,59 @@ class reStockCommand extends Command
      */
     public function handle()
     {
+
+        // $modifiedSince = Carbon::parse('2024-04-12 18:00:00'); // Parsea la fecha y hora en Carbon
         
-        $sku=$this->argument('sku');
+        $filter=( $this->argument('producto')!="-"?" AND title:'{$this->argument('producto')}'":'' );
 
-        $this->line("BUSCANDO EN ORIGEN: {$sku}");
-        $origen=$this->buscarSKU( $sku );    
-
-        // dd( $origen );
-
-        // dd( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevel"]["quantities"][0]["quantity"] );
+        $fechaAG=Carbon::now();
+        $inicio=( $this->argument('inicio')=='HOY'?$fechaAG->sub(1,'hour')->toIso8601ZuluString():Carbon::create( $this->argument('inicio') )->toIso8601ZuluString() );
         
-        if(!$origen["data"]["productVariants"]["pageInfo"]["startCursor"] ){
-            $this->line("<fg=black;bg=red> NO SE ENCONTRO EN ORIGEN {$sku}</>");
-            exit();
-        }
-        $getID=explode("/",$origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
+        // $modifiedSinceIso8601 = $inicio->toIso8601ZuluString();
 
+        // dd( $inicio );
 
-        $this->line("BUSCANDO EN B2B: {$sku}");
-        $b2b=$this->buscarSKU( $sku,false );      
-        if(!$b2b["data"]["productVariants"]["pageInfo"]["startCursor"] ){
-            $this->line("<fg=black;bg=red> NO SE ENCONTRO EN B2B {$sku}</>");
-            exit();
-        }          
-        $getIDb2b=explode("/",$b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["id"] );
-
+        // $filter="2024-04-12T17:30Z";
+        $query = $this->queryGetProducts();
+        $variables = [
+            "first" => 1,
+            "after" => null,
+            "before" => null,
+            // "query" => "",
+            "query" => "updated_at:>{$inicio}{$filter}",
+        ];
 
         
-        $stockOrigen=$this->evaluarStock( $origen["data"]["productVariants"]["edges"][0]["node"]["inventoryItem"]["inventoryLevels"]["edges"] );
+        // dd( $variables );
+                
+        $hasNextPage = true;
+        
+        while ($hasNextPage) {
+            
+            $response = $this->shopiGraph($query, $variables);
 
+            $hasNextPage = $response['data']['products']['pageInfo']['hasNextPage'];
+            if ($hasNextPage) {
+                $variables['after'] = $response['data']['products']['pageInfo']['endCursor'];
+            }
 
-        if( $stockOrigen != $b2b["data"]["productVariants"]["edges"][0]["node"]["inventoryQuantity"] ){
+            foreach ($response['data']['products']['edges'] as $clave => $producto) {   
+                
 
-            $response=$this->ajustarStock([
-                "inventory_item_id"=> array_pop($getIDb2b),
-                "available"=>$stockOrigen 
-            ]);
+                $fechaProducto = Carbon::parse($producto["node"]["updatedAt"]);
 
-            $this->line("<fg=black;bg=green> Se establecio el STOCK en: {$stockOrigen }</>");
+                if ($fechaProducto->gte($inicio)) {
 
-        }else{
-            $this->line("<fg=black;bg=blue>No hay cambios para el producto</>");
+                    $this->dispatch((new StockCommandJob( $producto ))->onQueue('procesarstock'));
+
+                }else{
+                    Log::info(":::::TERMINO STOCK:::::");
+                    $hasNextPage=false;
+                    break;
+                }
+
+            }
+
         }
 
     }

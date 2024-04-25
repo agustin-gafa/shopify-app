@@ -38,11 +38,22 @@ class HomeController extends Controller
 
     public function almacen(){
         $apiVer=env("SHOPIFY_VER");
-        return $this->shopiRequest( [
+        $b2c=$this->shopiRequest( [
             "verbo"=>"GET",
             "url"=> "/admin/api/{$apiVer}/locations.json",
             "opciones"=>[],
+            "tipo"=>true
         ] );
+
+        $b2b=$this->shopiRequest( [
+            "verbo"=>"GET",
+            "url"=> "/admin/api/{$apiVer}/locations.json",
+            "opciones"=>[],
+            "tipo"=>false
+        ] );
+
+        return ["B2C"=>$b2c,"B2B"=>$b2b];
+
     }
 
     public function configStore(){
