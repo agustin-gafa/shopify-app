@@ -68,15 +68,16 @@ class CreateAddProductsJob implements ShouldQueue
                 $agGetId=explode("/",$verificaExist["producto"]["data"]["products"]["edges"][0]["node"]["id"] );
                 $select_B2b_id=array_pop($agGetId);
                 
-                foreach ($missingProducts as $indexNewVariant => $newVariant) {  
-                    
-                    if( $newVariant["node"]['sku'] ){
+                foreach ($missingProducts as $indexNewVariant => $newVariant) {                    
+
+                    $agSKU=$this->evalSku( $newVariant["node"]['sku'],$newVariant["node"]['id'] );
+
                         $stockOrigen=$this->evaluarStock( $newVariant["node"]["inventoryItem"]["inventoryLevels"]["edges"] );
                         $items=[
                             "product_id"=>$select_B2b_id,
                             "title"=> $newVariant["node"]['title'],
                             "status"=> "draft",
-                            "sku"=> $newVariant["node"]['sku'],
+                            "sku"=> $agSKU,
                             "price"=> $newVariant["node"]['price'],                                    
                             "option1"=> $newVariant["node"]['title'],
                         ];
@@ -91,9 +92,9 @@ class CreateAddProductsJob implements ShouldQueue
                         ]);                        
 
                         Log::info("Variante agregada: {$this->producto["node"]["title"]} - {$newVariant["node"]['title']}");
-                    }else{
-                        Log::info("Variante NO TIENE SKU: {$this->producto["node"]["title"]} - {$newVariant["node"]['title']}");
-                    }
+                    // }else{
+                    //     Log::info("Variante NO TIENE SKU: {$this->producto["node"]["title"]} - {$newVariant["node"]['title']}");
+                    // }
 
                     
                 }                            

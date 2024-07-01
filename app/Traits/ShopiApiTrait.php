@@ -78,9 +78,9 @@ trait ShopiApiTrait {
 
             
 
-            if( $item["node"]["sku"] ){
+            // if( $item["node"]["sku"] ){
                 return $this->mapVariantApi( $item["node"],$producto['node']['title'] );
-            }
+            // }
 
         })->toArray();
 
@@ -121,11 +121,13 @@ trait ShopiApiTrait {
             $split=explode(" / ", $variante["title"] );
 
             $stock=$this->evaluarStock($variante["inventoryItem"]["inventoryLevels"]["edges"] );
+            
+            $agSKU=$this->evalSku( $variante['sku'],$variante['id'] );
 
             return [
                 'title'                => $variante["title"],
                 'status'               => 'draft',
-                'sku'                  => $variante['sku'],
+                'sku'                  => $agSKU,
                 //  'barcode'              => $variante['EAN'],
                 'price'                => $variante['price'],
                 //  'compare_at_price'     => $variante['Precio'],
@@ -177,6 +179,34 @@ trait ShopiApiTrait {
             "tipo"=>false
         ] );           
 
+    }
+
+    public function evalSku($sku,$id){
+        if( $sku== "" ){
+            $agSepara=explode("/",$id);
+            $rknGetId=array_pop($agSepara);                        
+            $agSKU="ADM{$rknGetId}";
+
+            $apiVer=env("SHOPIFY_VER");
+            $data= $this->shopiRequest( [
+                "verbo"=>"PUT",
+                "url"=>"/admin/api/{$apiVer}/variants/{$rknGetId}.json",            
+                "opciones"=>[
+                    "json"=>[
+                        'id'=>$rknGetId,
+                        'variant'=>[
+                            "sku"=>$agSKU                                
+                        ]
+                    ]
+                ],
+                "tipo"=>true
+            ] );       
+
+        }else{
+            $agSKU= $sku;
+        }
+
+        return $agSKU;
     }
     
 }

@@ -37,12 +37,14 @@ class ExportProduct extends Command
         Log::info(":::::::::::::::::::: INICIA PROCESO | ".date('Y-m-d H:i:s')." ::::::::::::::::::::");
 
         $first=( $this->argument('producto')!="-"?1:$this->argument('first') );
-        $filter=( $this->argument('producto')!="-"?" AND title:'{$this->argument('producto')}'":'' );        
-
+        
         $fechaAG=Carbon::now();
         $inicio=( $this->argument('inicio')=='HOY'?$fechaAG->sub(1,'hour')->toIso8601ZuluString():Carbon::create( $this->argument('inicio') )->toIso8601ZuluString() );
-
+        
         $query = $this->queryGetProducts();   
+        
+        $filter=( $this->argument('producto')!="-"?"title:'{$this->argument('producto')}'":"updated_at:>{$inicio}" );        
+        // $graphQuery=( $this->argument('inicio')=='RK' );
         
         // START JOB
         // $this->dispatch((new CreateAddProductsJob($first, $filter, $inicio, $query))->onQueue('procesarproducto'));
@@ -51,27 +53,38 @@ class ExportProduct extends Command
             'first' => (int)$first,
             'after' => null,
             'before' => null,
-            "query" => "updated_at:>{$inicio}{$filter}",
+            "query" => $filter,
         ];
+
+        // dd( $variables );
         
         $hasNextPage = true;
         
         while ($hasNextPage) {
 
+            Log::info("Busca productos B2C");
             $response = $this->shopiGraph($query, $variables);
+
+            // dd( $response );
             
             $hasNextPage = $response['data']['products']['pageInfo']['hasNextPage'];
             if ($hasNextPage) {
                 $variables['after'] = $response['data']['products']['pageInfo']['endCursor'];
-            }          
+            }        
+                        
+
+            // dd( $response['data']['products']['edges'] );
 
             foreach ($response['data']['products']['edges'] as $clave => $producto) {
                 
                 $fechaProducto = Carbon::parse($producto["node"]["updatedAt"]);
                 
                 
-                if ($fechaProducto->gte($inicio)) {
+                if ($fechaProducto->gte($inicio) || $this->argument('producto')!='-' ) {
 
+                    // dd( $producto  );
+
+                    Log::info("Agrega JOB");
                     $this->dispatch((new CreateAddProductsJob( $fechaProducto,$producto ))->onQueue('procesarproducto'));                    
 
                 }else{                    
@@ -89,6 +102,7 @@ class ExportProduct extends Command
 
         
 
+        Log::info("::: FIN comando");
       
     }
 
