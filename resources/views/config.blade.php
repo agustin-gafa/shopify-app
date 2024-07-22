@@ -6,8 +6,8 @@
             @csrf
         </template>
 
-        <template v-slot:contenido>
-            <tiendas></tiendas>
+        <template v-slot:contenido>            
+            <bloqueado-component></bloqueado-component>
         </template>
 
     </<cuadro-component>

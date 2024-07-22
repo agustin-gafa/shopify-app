@@ -19,7 +19,7 @@ class ExportProduct extends Command
      *
      * @var string
      */
-    protected $signature = 'app:export-product {inicio=HOY} {producto=-} {first=1}';
+    protected $signature = 'app:export-product {inicio=HOY} {first=1} {producto=-}';
 
     /**
      * The console command description.
@@ -66,37 +66,48 @@ class ExportProduct extends Command
             $response = $this->shopiGraph($query, $variables);
 
             // dd( $response );
+
+            if( array_key_exists('data',$response) ){
+
+                $this->line("<fg=black;bg=green>::Procesa 100</>"); 
             
-            $hasNextPage = $response['data']['products']['pageInfo']['hasNextPage'];
-            if ($hasNextPage) {
-                $variables['after'] = $response['data']['products']['pageInfo']['endCursor'];
-            }        
-                        
+                $hasNextPage = $response['data']['products']['pageInfo']['hasNextPage'];
+                if ($hasNextPage) {
+                    $variables['after'] = $response['data']['products']['pageInfo']['endCursor'];
+                }        
+                            
 
-            // dd( $response['data']['products']['edges'] );
+                // dd( $response['data']['products']['edges'] );
 
-            foreach ($response['data']['products']['edges'] as $clave => $producto) {
-                
-                $fechaProducto = Carbon::parse($producto["node"]["updatedAt"]);
-                
-                
-                if ($fechaProducto->gte($inicio) || $this->argument('producto')!='-' ) {
+                foreach ($response['data']['products']['edges'] as $clave => $producto) {
+                    
+                    $fechaProducto = Carbon::parse($producto["node"]["updatedAt"]);
+                    
+                    
+                    if ($fechaProducto->gte($inicio) || $this->argument('producto')!='-' ) {
 
-                    // dd( $producto  );
+                        // dd( $producto  );
 
-                    Log::info("Agrega JOB");
-                    $this->dispatch((new CreateAddProductsJob( $fechaProducto,$producto ))->onQueue('procesarproducto'));                    
+                        Log::info("Agrega JOB");
+                        $this->dispatch((new CreateAddProductsJob( $fechaProducto,$producto ))->onQueue('procesarproducto'));                    
 
-                }else{                    
-                    $hasNextPage=false;
-                    Log::info('::::::::::::::::::: TERMINO STOCK | '.date('Y-m-d H:i:s').' :::::::::::::::::::');
-                    break;
+                    }else{                    
+                        $hasNextPage=false;
+                        Log::info('::::::::::::::::::: TERMINO STOCK | '.date('Y-m-d H:i:s').' :::::::::::::::::::');
+                        break;
+                    }
+
                 }
+            }else{
 
-
-
+                $this->line("<fg=black;bg=green>::Termino porque DATA no tiene nada</>"); 
 
             }
+
+
+
+
+
 
         }
 

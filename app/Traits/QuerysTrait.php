@@ -33,16 +33,17 @@ trait QuerysTrait {
                                 }
                             }
                         }                        
-                        # metafields(first: 5) {
-                        #     edges {
-                        #         node {
-                        #             id
-                        #             namespace
-                        #             key
-                        #             value
-                        #         }
-                        #     }
-                        # }      
+                        metafields(first: 10) {
+                            edges {
+                                node {
+                                    id                                    
+                                    key
+                                    value
+                                    type
+                                    namespace                                    
+                                }
+                            }
+                        }      
                         updatedAt                  
                         variants(first: 20) {
                             edges {
