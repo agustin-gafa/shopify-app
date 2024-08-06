@@ -118,7 +118,13 @@ trait ShopiApiTrait {
     }
 
     public function mapVariantApi($variante,$titulo){    
-            $split=explode(" / ", $variante["title"] );
+            // $split=explode(" / ", $variante["title"] );
+
+            // if( count($split)>1 ){
+            //     $option="{$split[0]}-{$split[1]}";
+            // }else{
+            //     $option=$split[0];
+            // }
 
             $stock=$this->evaluarStock($variante["inventoryItem"]["inventoryLevels"]["edges"] );
             
@@ -131,7 +137,7 @@ trait ShopiApiTrait {
                 //  'barcode'              => $variante['EAN'],
                 'price'                => $variante['price'],
                 //  'compare_at_price'     => $variante['Precio'],
-                "option1"              => $split[0],
+                "option1"              => $variante["title"], //$option,
                 //  "option2"              => $split[1],
                 //  "option3"              => $variante['Descripcion_Marca'],
                 "inventory_quantity"   => $stock, #(int)$variante['inventoryQuantity'],

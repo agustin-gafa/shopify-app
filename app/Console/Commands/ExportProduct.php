@@ -19,7 +19,7 @@ class ExportProduct extends Command
      *
      * @var string
      */
-    protected $signature = 'app:export-product {inicio=HOY} {first=1} {producto=-}';
+    protected $signature = 'app:export-product {inicio=HOY} {producto=-} {first=1}';
 
     /**
      * The console command description.
@@ -67,9 +67,10 @@ class ExportProduct extends Command
 
             // dd( $response );
 
+
             if( array_key_exists('data',$response) ){
 
-                $this->line("<fg=black;bg=green>::Procesa 100</>"); 
+                // $this->line("<fg=black;bg=green>::Procesa 100</>"); 
             
                 $hasNextPage = $response['data']['products']['pageInfo']['hasNextPage'];
                 if ($hasNextPage) {
@@ -86,10 +87,15 @@ class ExportProduct extends Command
                     
                     if ($fechaProducto->gte($inicio) || $this->argument('producto')!='-' ) {
 
-                        // dd( $producto  );
+                        // dd( $producto["node"]["metafields"]["edges"]  );
+                        
+                        
+                        // dd( $producto["node"]["id"] );
 
-                        Log::info("Agrega JOB");
-                        $this->dispatch((new CreateAddProductsJob( $fechaProducto,$producto ))->onQueue('procesarproducto'));                    
+                        Log::info("Agrega JOB: {$producto["node"]["title"]}");
+                        $this->dispatch((new CreateAddProductsJob( $fechaProducto,$producto ))->onQueue('procesarproducto'));  
+                        
+                        // dd("Detener JOB");
 
                     }else{                    
                         $hasNextPage=false;
@@ -116,5 +122,9 @@ class ExportProduct extends Command
         Log::info("::: FIN comando");
       
     }
+
+
+
+   
 
 }
