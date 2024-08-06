@@ -10,10 +10,6 @@ trait ShopiApiTrait {
 
     public function setBaseUrl($tipo){
 
-        // $store=env('B2B_URL');
-        // $apiCla=env('B2B_CLAVE_API');
-        // $token=env('B2B_TOKEN');
-
         if($tipo==true){
             return "https://".env('SHOPIFY_CLAVE_API').":".env('SHOPIFY_TOKEN')."@".env('SHOPIFY_URL');
         }
@@ -31,8 +27,7 @@ trait ShopiApiTrait {
     function ajustarStock($data){
         $apiVer=env("SHOPIFY_VER");
         $orden=$this->shopiRequest( [
-            "verbo"=>"POST",
-            // "url"=> "/admin/api/2022-10/inventory_levels/adjust.json",
+            "verbo"=>"POST",            
             "url"=>"/admin/api/{$apiVer}/inventory_levels/set.json",
             "opciones"=>[
                 'json'=>[
@@ -65,28 +60,10 @@ trait ShopiApiTrait {
 
     public function mapProductApi($producto){
         $variantes = collect($producto['node']['variants']['edges'])->map(function ($item) use($producto) {
-            // unset($item["node"]["id"]); // Eliminar el campo "id" de cada variante
-            // $item["node"]["inventoryQuantity"]=10; // Eliminar el campo "id" de cada variante
-            
-            // $opciones=[];
-            // $split=explode(" / ", $item["node"]["title"] );
-            // foreach ($split as $clave => $atributo) {
-            //     array_push( $opciones, ["name"=>"Color","value"=>$atributo] );
-            // }
-            
-            // $item["node"]["selectedOptions"]=$opciones;
-
-            // return $item["node"];
-
-            
-
-            // if( $item["node"]["sku"] ){
-                return $this->mapVariantApi( $item["node"],$producto['node']['title'] );
-            // }
-
+            return $this->mapVariantApi( $item["node"],$producto['node']['title'] );        
         })->toArray();
 
-        // $str = implode (",", $producto["node"]["tags"]);    
+         
             $collection = collect($variantes);
             $filtered = $collection->whereNotNull()->toArray();
         
@@ -94,10 +71,7 @@ trait ShopiApiTrait {
 
             $imgSRC = $img->map(function ($item) {
                 return ["src"=>$item["node"]["src"]];
-            });
-
-            // dd( $imgSRC );
-            
+            });         
 
             return [
                 "title"                 => $producto['node']['title'],
@@ -120,13 +94,6 @@ trait ShopiApiTrait {
     }
 
     public function mapVariantApi($variante,$titulo){    
-            // $split=explode(" / ", $variante["title"] );
-
-            // if( count($split)>1 ){
-            //     $option="{$split[0]}-{$split[1]}";
-            // }else{
-            //     $option=$split[0];
-            // }
 
             $stock=$this->evaluarStock($variante["inventoryItem"]["inventoryLevels"]["edges"] );
             
@@ -222,156 +189,145 @@ trait ShopiApiTrait {
 
 
 
-    // METODOS
+    // METODOS para METACAMPOS
 
 
-public function evalMetacampos($producto,$segundoArrMeta,$productoEnB2B){
+    public function evalMetacampos($producto,$segundoArrMeta,$productoEnB2B){        
 
-    // Log::info("::AAA evalMetacampos");
+        $metacampos=$this->compararArraysSinId($producto["node"]["metafields"]["edges"],$segundoArrMeta );
 
-    $metacampos=$this->compararArraysSinId($producto["node"]["metafields"]["edges"],$segundoArrMeta );
-
-    if($metacampos["hayCambios"]){
-        
-        $apiVer=env("SHOPIFY_VER");
+        if($metacampos["hayCambios"]){
+            
+            $apiVer=env("SHOPIFY_VER");
 
 
-        $agGetIdMeta=explode("/",$productoEnB2B );
-        $select_B2b_idMeta=array_pop($agGetIdMeta);
+            $agGetIdMeta=explode("/",$productoEnB2B );
+            $select_B2b_idMeta=array_pop($agGetIdMeta);
 
-        
+            
 
-        if( count($metacampos["NUEVO"]) > 0 ){
-            Log::info("::CREAR METACAMPOS");
+            if( count($metacampos["NUEVO"]) > 0 ){
+                Log::info("::CREAR METACAMPOS");
 
-            foreach ($metacampos["NUEVO"] as $claveMeta => $metacampo) {
+                foreach ($metacampos["NUEVO"] as $claveMeta => $metacampo) {
 
-                try {
-                    $this->shopiRequest( [
-                        "verbo"=>"POST",
-                        "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields.json",
-                        "opciones"=>[
-                            'json'=>[
-                                "metafield"=>$metacampo
-                            ]
-                        ],
-                        "tipo"=>false
-                    ] );
-                    Log::info("METACAMPO {$metacampo["key"]} CREADO");
-                } catch (Exception $e) {
-                    Log::info("ERROR: {$metacampo["key"]}, el campo contiene propiedades que se pueden compartir");
+                    try {
+                        $this->shopiRequest( [
+                            "verbo"=>"POST",
+                            "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields.json",
+                            "opciones"=>[
+                                'json'=>[
+                                    "metafield"=>$metacampo
+                                ]
+                            ],
+                            "tipo"=>false
+                        ] );
+                        Log::info("METACAMPO {$metacampo["key"]} CREADO");
+                    } catch (Exception $e) {
+                        Log::info("ERROR: {$metacampo["key"]}, el campo contiene propiedades que se pueden compartir");
+                    }
+
+                }
+                
+            }
+
+            if( count($metacampos["ACTUALIZAR"]) > 0 ){
+                Log::info("::ACTUALIZAR METACAMPOS");
+                
+                foreach ($metacampos["ACTUALIZAR"] as $claveMetaA => $metacampoA) {                    
+
+                    $selectMetaId=explode("/",$metacampoA["id"] );
+                    $getMetadId=array_pop($selectMetaId);
+
+                        $this->shopiRequest( [
+                            "verbo"=>"PUT",
+                            "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields/{$getMetadId}.json",
+                            "opciones"=>[
+                                'json'=>[
+                                    "metafield"=>[
+                                        "id"=>$getMetadId,                                        
+                                        "value"=>$metacampoA["value"],
+                                        // "type"=>$metacampoA["type"],
+                                        // "namespace"=>$metacampoA["namespace"],
+                                        // "key"=>$metacampoA["key"]
+                                    ]
+                                ]
+                            ],
+                            "tipo"=>false
+                        ] );
+                        Log::info("METACAMPO {$metacampoA["key"]} ACTUALIZADO");
+
+                }
+            }
+
+        }else{
+            Log::info("NO SE DETECTARON CAMBIOS EN METACAMPOS");
+        }
+    }
+
+
+    public function compararArraysSinId($array1, $array2) {
+        $actualizar = [];
+        $nuevo = [];
+        $hayCambios = false;
+
+        // Tipos excluidos
+        $tiposExcluidos = ['list.product_reference', 'single_line_text_field', 'list.metaobject_reference'];
+
+        // Filtrar array1 eliminando los elementos con tipos excluidos
+        $array1 = array_filter($array1, function($item) use ($tiposExcluidos) {
+            return !in_array($item['node']['type'], $tiposExcluidos);
+        });
+
+        foreach ($array1 as $item1) {
+            $node1 = $item1['node'];
+            $encontrado = false;
+
+            foreach ($array2 as $item2) {
+                $node2 = $item2['node'];
+
+                // Verificar si todas las claves excepto 'value' coinciden
+                $todasLasClavesCoinciden = true;
+                foreach ($node1 as $clave => $valor) {
+                    if ($clave !== 'id' && $clave !== 'value' && (!isset($node2[$clave]) || $node1[$clave] !== $node2[$clave])) {
+                        $todasLasClavesCoinciden = false;
+                        break;
+                    }
                 }
 
-            }
-            
-        }
-
-        if( count($metacampos["ACTUALIZAR"]) > 0 ){
-            Log::info("::ACTUALIZAR METACAMPOS");
-            
-            foreach ($metacampos["ACTUALIZAR"] as $claveMetaA => $metacampoA) {
-
-
-                // dd( $metacampoA );
-
-                $selectMetaId=explode("/",$metacampoA["id"] );
-                $getMetadId=array_pop($selectMetaId);
-
-                // dd($getMetadId);
-
-                // try {
-                    $this->shopiRequest( [
-                        "verbo"=>"PUT",
-                        "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields/{$getMetadId}.json",
-                        "opciones"=>[
-                            'json'=>[
-                                "metafield"=>[
-                                    "id"=>$getMetadId,                                        
-                                    "value"=>$metacampoA["value"],
-                                    // "type"=>$metacampoA["type"],
-                                    // "namespace"=>$metacampoA["namespace"],
-                                    // "key"=>$metacampoA["key"]
-                                ]
-                            ]
-                        ],
-                        "tipo"=>false
-                    ] );
-                    Log::info("METACAMPO {$metacampoA["key"]} ACTUALIZADO");
-                // } catch (Exception $e) {
-                //     Log::info("ERROR: {$metacampoA["key"]}, el campo contiene propiedades que se pueden compartir");
-                // }
-
-            }
-        }
-
-    }else{
-        Log::info("NO SE DETECTARON CAMBIOS EN METACAMPOS");
-    }
-}
-
-
- public function compararArraysSinId($array1, $array2) {
-    $actualizar = [];
-    $nuevo = [];
-    $hayCambios = false;
-
-    // Tipos excluidos
-    $tiposExcluidos = ['list.product_reference', 'single_line_text_field', 'list.metaobject_reference'];
-
-    // Filtrar array1 eliminando los elementos con tipos excluidos
-    $array1 = array_filter($array1, function($item) use ($tiposExcluidos) {
-        return !in_array($item['node']['type'], $tiposExcluidos);
-    });
-
-    foreach ($array1 as $item1) {
-        $node1 = $item1['node'];
-        $encontrado = false;
-
-        foreach ($array2 as $item2) {
-            $node2 = $item2['node'];
-
-            // Verificar si todas las claves excepto 'value' coinciden
-            $todasLasClavesCoinciden = true;
-            foreach ($node1 as $clave => $valor) {
-                if ($clave !== 'id' && $clave !== 'value' && (!isset($node2[$clave]) || $node1[$clave] !== $node2[$clave])) {
-                    $todasLasClavesCoinciden = false;
+                if ($todasLasClavesCoinciden) {
+                    $encontrado = true;
+                    if ($node1['value'] !== $node2['value']) {
+                        $actualizar[] = [
+                            'id' => $node2['id'], // Usar el ID del segundo array para actualizar
+                            'key' => $node1['key'],
+                            'value' => $node1['value'], // Usar el value del primer array
+                            'type' => $node1['type'],
+                            'namespace' => $node1['namespace']
+                        ];
+                        $hayCambios = true;
+                    }
                     break;
                 }
             }
 
-            if ($todasLasClavesCoinciden) {
-                $encontrado = true;
-                if ($node1['value'] !== $node2['value']) {
-                    $actualizar[] = [
-                        'id' => $node2['id'], // Usar el ID del segundo array para actualizar
-                        'key' => $node1['key'],
-                        'value' => $node1['value'], // Usar el value del primer array
-                        'type' => $node1['type'],
-                        'namespace' => $node1['namespace']
-                    ];
-                    $hayCambios = true;
-                }
-                break;
+            if (!$encontrado) {
+                $nuevo[] = [
+                    'key' => $node1['key'],
+                    'value' => $node1['value'],
+                    'type' => $node1['type'],
+                    'namespace' => $node1['namespace']
+                ];
+                $hayCambios = true;
             }
         }
 
-        if (!$encontrado) {
-            $nuevo[] = [
-                'key' => $node1['key'],
-                'value' => $node1['value'],
-                'type' => $node1['type'],
-                'namespace' => $node1['namespace']
-            ];
-            $hayCambios = true;
-        }
+        return [
+            'hayCambios' => $hayCambios,
+            'ACTUALIZAR' => $actualizar,
+            'NUEVO' => $nuevo
+        ];
     }
-
-    return [
-        'hayCambios' => $hayCambios,
-        'ACTUALIZAR' => $actualizar,
-        'NUEVO' => $nuevo
-    ];
-}
 
 
     
