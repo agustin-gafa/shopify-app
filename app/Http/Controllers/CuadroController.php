@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 
 use App\Traits\{GraphQlTrait,QuerysTrait,ShopiApiTrait};
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
+
 class CuadroController extends Controller
 {
     
@@ -34,6 +37,8 @@ class CuadroController extends Controller
             return response()->json(['msj' => "El producto ya existe en B2B","tipo"=>"warning"], 401);
         }
 
+        // return $exiteB2B;
+
 
         $hasNextPage = true;
         
@@ -46,18 +51,26 @@ class CuadroController extends Controller
             }
 
             foreach ($response['data']['products']['edges'] as $clave => $producto) {     
+
+                // return $producto["node"]["title"];
                 
                 $input=$this->mapProductApi( $producto );    
                           
                 try {
                     if( count($input["variants"])>0 ){
-                        $crearProducto=$this->crearProductoShopify( $input );                    
+                        $crearProducto=$this->crearProductoShopify( $input );
+
+                        Artisan::call('app:export-product', [
+                            'inicio' => 'HOY',
+                            'producto' => "{$producto["node"]["title"]}"                       
+                        ]);                    
+
                         return response()->json(['msj'=>"Se creo el producto B2B","tipo"=>"success",'response' => $crearProducto], 200);
                     }else{
                         return response()->json(['msj' => "PRODUCTO SIN SKU","tipo"=>"warning"], 401);
                     }
                 } catch (\Exception $e) {
-                    return response()->json(['msj' => $e,"tipo"=>"error"], 401);                    
+                    return response()->json(['msj' => $e,"tipo"=>"error que pasho"], 401);                    
                 }
             }
 
@@ -121,6 +134,9 @@ class CuadroController extends Controller
         }  
 
     }
+
+
+     
 
 
 }

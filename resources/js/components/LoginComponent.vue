@@ -7,7 +7,9 @@
             
             
             <v-col cols="4" class="mx-auto" >
-                <v-card class="pa-10">
+                <v-card class="pa-10"
+                prepend-icon="mdi-login"
+                title="ADAMINA">
                 <v-form method="POST" action="/login" >
                     <slot></slot>
 
@@ -25,7 +27,7 @@
 
                     <v-btn        
                         class="mt-2"
-                        text="Submit"
+                        text="Acceder"
                         type="submit"
                         block
                     ></v-btn>

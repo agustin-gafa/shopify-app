@@ -29,11 +29,15 @@
 
       <v-card min-width="300">
         <v-list>
-          <v-list-item
-            prepend-avatar="https://cdn.vuetifyjs.com/images/john.jpg"
+          <v-list-item            
             subtitle="Admin"
-            :title="username"
+            :title="username"          
           >
+
+          <template v-slot:prepend>
+        <v-avatar color="surface-light" size="32">🎯</v-avatar>
+      </template>
+
             <template v-slot:append>
               <v-btn
                 :class="fav ? 'text-red' : ''"
@@ -47,6 +51,7 @@
 
         <v-divider></v-divider>
 
+<!--
         <v-list>
           <v-list-item>
             <v-switch
@@ -66,6 +71,7 @@
             ></v-switch>
           </v-list-item>
         </v-list>
+        -->
 
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -78,7 +84,7 @@
             onclick="event.preventDefault();
                     document.getElementById('logout-form').submit();"
             >                                      
-            LOGOUT
+            CERRAR SESION
 
             <form id="logout-form" action="/logout" method="POST" class="d-none">              
               <slot></slot>

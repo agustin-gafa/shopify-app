@@ -4,6 +4,8 @@ namespace App\Traits;
 
 use GuzzleHttp\Client;
 
+use Illuminate\Support\Facades\Log;
+
 trait ShopiApiTrait {
 
     public function setBaseUrl($tipo){
@@ -214,5 +216,163 @@ trait ShopiApiTrait {
 
         return $agSKU;
     }
+
+
+
+
+
+
+    // METODOS
+
+
+public function evalMetacampos($producto,$segundoArrMeta,$productoEnB2B){
+
+    // Log::info("::AAA evalMetacampos");
+
+    $metacampos=$this->compararArraysSinId($producto["node"]["metafields"]["edges"],$segundoArrMeta );
+
+    if($metacampos["hayCambios"]){
+        
+        $apiVer=env("SHOPIFY_VER");
+
+
+        $agGetIdMeta=explode("/",$productoEnB2B );
+        $select_B2b_idMeta=array_pop($agGetIdMeta);
+
+        
+
+        if( count($metacampos["NUEVO"]) > 0 ){
+            Log::info("::CREAR METACAMPOS");
+
+            foreach ($metacampos["NUEVO"] as $claveMeta => $metacampo) {
+
+                try {
+                    $this->shopiRequest( [
+                        "verbo"=>"POST",
+                        "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields.json",
+                        "opciones"=>[
+                            'json'=>[
+                                "metafield"=>$metacampo
+                            ]
+                        ],
+                        "tipo"=>false
+                    ] );
+                    Log::info("METACAMPO {$metacampo["key"]} CREADO");
+                } catch (Exception $e) {
+                    Log::info("ERROR: {$metacampo["key"]}, el campo contiene propiedades que se pueden compartir");
+                }
+
+            }
+            
+        }
+
+        if( count($metacampos["ACTUALIZAR"]) > 0 ){
+            Log::info("::ACTUALIZAR METACAMPOS");
+            
+            foreach ($metacampos["ACTUALIZAR"] as $claveMetaA => $metacampoA) {
+
+
+                // dd( $metacampoA );
+
+                $selectMetaId=explode("/",$metacampoA["id"] );
+                $getMetadId=array_pop($selectMetaId);
+
+                // dd($getMetadId);
+
+                // try {
+                    $this->shopiRequest( [
+                        "verbo"=>"PUT",
+                        "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_idMeta}/metafields/{$getMetadId}.json",
+                        "opciones"=>[
+                            'json'=>[
+                                "metafield"=>[
+                                    "id"=>$getMetadId,                                        
+                                    "value"=>$metacampoA["value"],
+                                    // "type"=>$metacampoA["type"],
+                                    // "namespace"=>$metacampoA["namespace"],
+                                    // "key"=>$metacampoA["key"]
+                                ]
+                            ]
+                        ],
+                        "tipo"=>false
+                    ] );
+                    Log::info("METACAMPO {$metacampoA["key"]} ACTUALIZADO");
+                // } catch (Exception $e) {
+                //     Log::info("ERROR: {$metacampoA["key"]}, el campo contiene propiedades que se pueden compartir");
+                // }
+
+            }
+        }
+
+    }else{
+        Log::info("NO SE DETECTARON CAMBIOS EN METACAMPOS");
+    }
+}
+
+
+ public function compararArraysSinId($array1, $array2) {
+    $actualizar = [];
+    $nuevo = [];
+    $hayCambios = false;
+
+    // Tipos excluidos
+    $tiposExcluidos = ['list.product_reference', 'single_line_text_field', 'list.metaobject_reference'];
+
+    // Filtrar array1 eliminando los elementos con tipos excluidos
+    $array1 = array_filter($array1, function($item) use ($tiposExcluidos) {
+        return !in_array($item['node']['type'], $tiposExcluidos);
+    });
+
+    foreach ($array1 as $item1) {
+        $node1 = $item1['node'];
+        $encontrado = false;
+
+        foreach ($array2 as $item2) {
+            $node2 = $item2['node'];
+
+            // Verificar si todas las claves excepto 'value' coinciden
+            $todasLasClavesCoinciden = true;
+            foreach ($node1 as $clave => $valor) {
+                if ($clave !== 'id' && $clave !== 'value' && (!isset($node2[$clave]) || $node1[$clave] !== $node2[$clave])) {
+                    $todasLasClavesCoinciden = false;
+                    break;
+                }
+            }
+
+            if ($todasLasClavesCoinciden) {
+                $encontrado = true;
+                if ($node1['value'] !== $node2['value']) {
+                    $actualizar[] = [
+                        'id' => $node2['id'], // Usar el ID del segundo array para actualizar
+                        'key' => $node1['key'],
+                        'value' => $node1['value'], // Usar el value del primer array
+                        'type' => $node1['type'],
+                        'namespace' => $node1['namespace']
+                    ];
+                    $hayCambios = true;
+                }
+                break;
+            }
+        }
+
+        if (!$encontrado) {
+            $nuevo[] = [
+                'key' => $node1['key'],
+                'value' => $node1['value'],
+                'type' => $node1['type'],
+                'namespace' => $node1['namespace']
+            ];
+            $hayCambios = true;
+        }
+    }
+
+    return [
+        'hayCambios' => $hayCambios,
+        'ACTUALIZAR' => $actualizar,
+        'NUEVO' => $nuevo
+    ];
+}
+
+
     
 }
