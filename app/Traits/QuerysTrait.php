@@ -18,13 +18,15 @@ trait QuerysTrait {
                 edges {
                     node {
                         id
+                        handle
                         title
                         descriptionHtml
                         tags
                         totalVariants
                         totalInventory                    
                         vendor
-                        status                        
+                        status   
+                        onlineStoreUrl                     
                         images(first: 10) {
                             edges {
                                 node {
@@ -103,6 +105,7 @@ trait QuerysTrait {
                         totalInventory
                         vendor
                         status
+                        onlineStoreUrl
                         images(first: 10) {
                             edges {
                                 node {
@@ -178,7 +181,7 @@ trait QuerysTrait {
                             inventoryQuantity                            
                             inventoryItem{
                                 id                              
-                                inventoryLevels(first: 200) {                             
+                                inventoryLevels(first: 100) {                             
                                     edges {
                                         node {
                                             id                                    

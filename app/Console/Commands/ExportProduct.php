@@ -81,6 +81,8 @@ class ExportProduct extends Command
                 // dd( $response['data']['products']['edges'] );
 
                 foreach ($response['data']['products']['edges'] as $clave => $producto) {
+
+                    // dd( $producto );
                     
                     $fechaProducto = Carbon::parse($producto["node"]["updatedAt"]);
                     

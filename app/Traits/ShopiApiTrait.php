@@ -75,6 +75,7 @@ trait ShopiApiTrait {
 
             return [
                 "title"                 => $producto['node']['title'],
+                "handle"                => $producto['node']['handle'],
                 "body_html"             => $producto['node']['descriptionHtml'],
                 "vendor"                => $producto['node']['vendor'],
                 "tags"                  => implode (",", $producto["node"]["tags"]),

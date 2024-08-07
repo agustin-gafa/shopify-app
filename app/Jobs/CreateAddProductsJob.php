@@ -77,10 +77,32 @@ class CreateAddProductsJob implements ShouldQueue
                 return !in_array($item['node']['title'], $titlesInSecondArray);
             });
 
+            $agGetId=explode("/",$verificaExist["producto"]["data"]["products"]["edges"][0]["node"]["id"] );
+            $select_B2b_id=array_pop($agGetId);
+
+            if( ($this->producto["node"]["handle"] != $verificaExist["producto"]["data"]["products"]["edges"][0]["node"]["handle"]) || ($this->producto["node"]["status"] != $verificaExist["producto"]["data"]["products"]["edges"][0]["node"]["status"] )   ){
+                Log::info("::MODIFICAR URL Y/O STATUS");
+                $apiVer=env("SHOPIFY_VER");
+                $data= $this->shopiRequest( [
+                    "verbo"=>"PUT",
+                    "url"=>"/admin/api/{$apiVer}/products/{$select_B2b_id}.json",            
+                    "opciones"=>[
+                        "json"=>[
+                            'product'=>[
+                                'id'        =>$select_B2b_id,
+                                "handle"    =>$this->producto["node"]["handle"],
+                                "status"    =>strtolower($this->producto["node"]["status"])
+                            ]
+                        ]
+                    ],
+                    "tipo"=>false
+                ] );   
+            }
+
+
             if( count($missingProducts)>0 ){
 
-                $agGetId=explode("/",$verificaExist["producto"]["data"]["products"]["edges"][0]["node"]["id"] );
-                $select_B2b_id=array_pop($agGetId);
+                
                 
                 foreach ($missingProducts as $indexNewVariant => $newVariant) {                    
 
